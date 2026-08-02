@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Ticket Médico - {{ record.pet.name }}</title>
+    <style>
+      @page {
+        size: 80mm 200mm;
+        margin: 0;
+        padding: 0;
+      }
+      body {
+        font-family: 'Courier New', monospace;
+        font-size: 14px;
+        line-height: 1.2;
+        margin: 1mm;
+        padding: 0;
+        width: 76mm;
+        word-wrap: break-word;
+      }
+      .header {
+        text-align: center;
+        margin-bottom: 5px;
+        border-bottom: 1px dashed #000;
+        padding-bottom: 3px;
+      }
+      .clinic-info {
+        font-size: 14px;
+        text-align: center;
+        margin-bottom: 3px;
+      }
+      .pet-info,
+      .owner-info {
+        margin-bottom: 3px;
+      }
+      .record-details {
+        margin-top: 5px;
+      }
+      .section-title {
+        font-weight: bold;
+        border-bottom: 1px solid #000;
+        margin: 3px 0;
+        font-size: 13px;
+      }
+      .footer {
+        font-size: 13px;
+        text-align: center;
+        margin-top: 5px;
+        border-top: 1px dashed #000;
+        padding: 3px;
+      }
+      .no-break {
+        page-break-inside: avoid;
+      }
+      h2 {
+        font-size: 15px;
+        margin: 3px 0;
+        line-height: 1.1;
+      }
+      .text-wrap {
+        white-space: normal;
+        word-break: break-word;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="header">
+      <h2>CLÍNICA VETERINARIA HAPPYPET</h2>
+      <div class="clinic-info">
+        De Radio Rumbos 50 mts al este <br />
+        Tel: 8465-8683 <br />
+        Tel: 8976-7607
+      </div>
+    </div>
+
+    <div class="owner-info">
+      <div class="section-title">DATOS DEL DUEÑO:</div>
+      <div class="text-wrap">
+        <strong>Nombre:</strong> {{ record.pet.owner.first_name }} {{ record.pet.owner.last_name }}<br />
+        <strong>Identificador:</strong> {{ record.pet.owner.id_number }}<br />
+        <strong>Teléfono:</strong> {{ record.pet.owner.phone }}
+      </div>
+    </div>
+
+    <div class="pet-info no-break">
+      <div class="text-wrap">
+        <strong>MASCOTA:</strong> {{ record.pet.name }}<br />
+        <strong>ESPECIE:</strong> {{ record.pet.get_species_display }}<br />
+        <strong>RAZA:</strong> {{ record.pet.breed }}<br />
+        <strong>FECHA:</strong> {{ record.visit_date|date:'d/m/Y H:i' }}<br />
+        <strong>VETERINARIO:</strong> {{ record.veterinarian }}
+      </div>
+    </div>
+
+    <div class="record-details no-break">
+      <div class="section-title">TRATAMIENTO:</div>
+      <div class="text-wrap">{{ record.treatment }}</div>
+    </div>
+
+    <div class="footer no-break">
+      <p>ID: {{ record.id }} - {{ record.visit_date|date:'Ymd' }}</p>
+    </div>
+  </body>
+</html>

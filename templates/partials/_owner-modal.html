@@ -1,0 +1,57 @@
+<div class="modal fade" id="addOwner" tabindex="-1">
+  <div class="modal-dialog modal-lg">
+    <div class="modal-content">
+      <div class="modal-header bg-primary-color">
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+
+      <form id="combinedForm" method="post" action="{{ form_url }}">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="tab-content px-4">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label class="form-label">Nombre*</label>
+                  {{ owner_form.first_name }}
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label class="form-label">Numero de Telefono*</label>
+                  {{ owner_form.phone }}
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label class="form-label">Apellido*</label>
+                  {{ owner_form.last_name }}
+                </div>
+              </div>
+
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label class="form-label">Indentificador*</label>
+                  {{ owner_form.id_number }}
+                </div>
+              </div>
+
+              <div class="col-md-12">
+                <div class="form-group">
+                  <label class="form-label">Direccion*</label>
+                  {{ owner_form.address }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn bg-dark text-white" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary text-white"><i class="fas fa-save me-2"></i>Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

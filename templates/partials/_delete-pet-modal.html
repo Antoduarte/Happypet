@@ -1,0 +1,29 @@
+<!-- Delete Modal -->
+<div class="modal fade" id="deleteModal" tabindex="-1">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-danger text-white">
+        <h5 class="modal-title text-white"><i class="fas fa-exclamation-triangle me-2"></i> Confirmar eliminación</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body">
+        <p>
+          ¿Estás seguro que deseas eliminar permanentemente a <strong>{{ pet.name }}</strong>?
+        </p>
+        {% if pet.medical_records.count > 0 %}
+          <div class="alert alert-warning">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            Esta acción también eliminará {{ pet.medical_records.count }} historial médico asociados.
+          </div>
+        {% endif %}
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+        <form method="POST" action="{% url 'delete_pet' pet.id %}">
+          {% csrf_token %}
+          <button type="submit" class="btn btn-danger">Eliminar permanentemente</button>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>

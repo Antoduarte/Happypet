@@ -1,0 +1,71 @@
+{% load static %}
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>
+      {% block title %}
+        Home
+      {% endblock %}
+    </title>
+    <link rel="icon" type="image/x-icon" href="{% static '/images/favicon.ico' %}" />
+    <link rel="stylesheet" href="{% static 'css/bootstrap.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/all.min.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/adminkit.css' %}" />
+    <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+  </head>
+
+  <body>
+    <div class="wrapper">
+      {% block navbar %}
+        <aside id="sidebar">
+          <div class="d-md-flex d-none">
+            <button class="toggle-btn" type="button"><i class="fas fa-paw"></i></button>
+            <div class="sidebar-logo">
+              <span class="text-white h4">HappyPet</span>
+            </div>
+          </div>
+          <ul class="sidebar-nav">
+            <li class="sidebar-item">
+              <a href="{% url 'dashboard' %}" class="sidebar-link">
+                <i class="fa-solid fa-house-chimney"></i>
+                <span>Inicio</span>
+              </a>
+            </li>
+
+            <li class="sidebar-item">
+              <a href="{% url 'pet_list' %}" class="sidebar-link">
+                <i class="fa-solid fa-bone"></i>
+                <span>Dueños / Mascotas</span>
+              </a>
+            </li>
+
+            <li class="sidebar-item">
+              <a href="/admin" class="sidebar-link">
+                <i class="fa-solid fa-users"></i>
+                <span>Usuarios</span>
+              </a>
+            </li>
+          </ul>
+        </aside>
+      {% endblock %}
+
+      <div class="main">
+        {% block page_content %}
+          <div class="text-center">
+            <h1>Hello!! I am Default Page</h1>
+          </div>
+          <p>Default page add content</p>
+        {% endblock %}
+      </div>
+    </div>
+    <script src="{% static '/js/bootstrap.bundle.min.js' %}"></script>
+    <script src="{% static '/js/script.js' %}"></script>
+
+    <div></div>
+  </body>
+
+  <!-- Footer -->
+</html>

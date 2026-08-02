@@ -1,0 +1,123 @@
+<div class="modal fade" id="addMedicalRecord" tabindex="-1">
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header bg-primary-color">
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+
+      <form id="combinedForm" method="post" action="{{ form_url }}">
+        {% csrf_token %}
+        <div class="modal-body">
+          <div class="tab-content px-4">
+            <div class="row">
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label class="form-label">Motivo de la visita</label>
+                  {{ medical_record_form.visit_motive }}
+                </div>
+              </div>
+              <div class="col-md-6">
+                <div class="form-group">
+                  <label class="form-label">Anamnesis</label>
+                  {{ medical_record_form.visit_reason }}
+                </div>
+              </div>
+
+              <div class="col-md-12">
+                <div class="row">
+                  <div class="col-md-4">
+                    <div class="form-group">
+                      <label class="form-label">Frecuencia cardiaca (bpm)</label>
+                      {{ medical_record_form.heart_rate }}
+                    </div>
+                  </div>
+
+                  <div class="col-md-4">
+                    <div class="form-group">
+                      <label class="form-label">Frecuencia respiratoria (rpm)</label>
+                      {{ medical_record_form.respiratory_rate }}
+                    </div>
+                  </div>
+
+                  <div class="col-md-4">
+                    <div class="form-group">
+                      <label class="form-label">Peso (kg)</label>
+                      {{ medical_record_form.weight }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-12">
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label class="form-label">Temperamento durante el diagnóstico</label>
+                      {{ medical_record_form.temperament }}
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="form-group">
+                      <label class="form-label">Veterinario responsable</label>
+                      {{ medical_record_form.veterinarian }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-12">
+                <div class="row">
+                  <div class="col-md-4">
+                    <div class="form-group">
+                      <label class="form-label">Temperatura (°C)</label>
+                      {{ medical_record_form.temperature }}
+                    </div>
+                  </div>
+
+                  <div class="col-md-4">
+                    <div class="form-group">
+                      <label class="form-label">Fecha de Visita</label>
+                      {{ medical_record_form.visit_date }}
+                    </div>
+                  </div>
+
+                  <div class="col-md-4">
+                    <div class="form-group">
+                      <label class="form-label">Próximo control</label>
+                      {{ medical_record_form.next_checkup }}
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label class="form-label">Tratamiento</label>
+                  {{ medical_record_form.treatment }}
+                </div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label class="form-label">Diagnóstico</label>
+                  {{ medical_record_form.diagnosis }}
+                </div>
+              </div>
+
+              <div class="col-md-4">
+                <div class="form-group">
+                  <label class="form-label">Medicamentos recetados</label>
+                  {{ medical_record_form.prescribed_meds }}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-dark text-white" data-bs-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-primary"><i class="fas fa-save me-2"></i>Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>

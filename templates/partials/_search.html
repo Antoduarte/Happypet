@@ -1,0 +1,18 @@
+<div class="container-fluid text-center py-2 py-md-3 px-md-4">
+  <div class="row g-3">
+    <div class="col-md-6">
+      <form method="get" action=".">
+        <div class="input-group">
+          <input type="text" class="form-control" name="q" placeholder="Buscar por nombre de mascota, nombre del dueño, identificador o teléfono..." value="{{ search_query }}" />
+          <button class="btn btn-primary" type="submit"><i class="fas fa-search"></i> Buscar</button>
+        </div>
+      </form>
+    </div>
+
+    <div class="col-md-6 text-end">
+      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addPet"><i class="fas fa-plus"></i> Nueva Mascota</button>
+
+      <button class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addOwner"><i class="fas fa-plus"></i> Nuevo Dueño</button>
+    </div>
+  </div>
+</div>

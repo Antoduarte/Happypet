@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block title %}
+  Dashboard
+{% endblock %}
+{% block page_content %}
+  <div class="container-fluid px-2 pt-3 px-md-4 pt-md-4">
+    <h1>Dueños / Mascotas <i class="fa-solid fa-shield-dog text-primary"></i></h1>
+  </div>
+  {% include 'partials/_user_feedback.html' %}
+  {% include 'partials/_search.html' %}
+
+  <div class="container-fluid mx-auto py-2 px-2 py-md-3 px-md-4">
+    <div class="table-responsive">
+      <table class="table table-bordered">
+        <thead class="table-dark">
+          <tr>
+            <th scope="col">Nombre</th>
+            <th scope="col">Numero de Telefono</th>
+            <th scope="col">Indentificador</th>
+            <th scope="col">Direccion</th>
+            <th scope="col">Mascotas</th>
+            <th scope="col">Registro</th>
+          </tr>
+        </thead>
+        <tbody class="table-group-divider">
+          {% for owner in owners %}
+            <tr>
+              <td>
+                <a href="{% url 'owner_detail' owner.id %}">{{ owner.first_name }} {{ owner.last_name }}</a>
+              </td>
+              <td>{{ owner.phone }}</td>
+              <td>{{ owner.id_number }}</td>
+              <td>{{ owner.address }}</td>
+              <td>
+                <ul class="d-flex gap-3 flex-wra m-0 p-0">
+                  {% for pet in owner.pets.all %}
+                    <li>
+                      <a href="{% url 'pet_detail' pet.id %}"><i class="fas fa-paw"></i> {{ pet.name }}</a>
+                    </li>
+                  {% empty %}
+                    <p colspan="8" class="text-center">No hay mascotas registradas</p>
+                  {% endfor %}
+                </ul>
+              </td>
+              <td>{{ owner.registration_date|date:'d M Y' }}</td>
+            </tr>
+          {% empty %}
+            <tr>
+              <td colspan="8" class="text-center">No hay dueños registrados</td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  {% include 'partials/_pagination.html' %}
+
+  {% url 'create_pet' as create_pet_url %}
+  {% url 'create_owner' as create_owner_url %}
+
+  {% include 'partials/_owner-modal.html' with form_url=create_owner_url %}
+  {% include 'partials/_pet-modal.html' with form_url=create_pet_url %}
+{% endblock %}

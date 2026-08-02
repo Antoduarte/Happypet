@@ -1,0 +1,20 @@
+{
+  "name": "happypet",
+  "version": "1.0.0",
+  "description": "Youtube : [Project Overview](https://youtu.be/cMA1q_wHJv4)",
+  "homepage": "https://github.com/suyash-srivastava-dev/Inventory-Management#readme",
+  "bugs": {
+    "url": "https://github.com/suyash-srivastava-dev/Inventory-Management/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/suyash-srivastava-dev/Inventory-Management.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}

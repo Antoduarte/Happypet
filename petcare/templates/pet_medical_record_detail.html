@@ -1,0 +1,256 @@
+{% extends 'base.html' %}
+{% block page_content %}
+  <div class="medical-record-detail">
+    <!-- Header Section -->
+    <div class="bg-secondary-color mb-3">
+      <div class="container py-4">
+        <div class="row align-items-center">
+          <div class="col-md-8">
+            <div class="d-flex align-items-center">
+              <a href="{% url 'pet_detail' record.pet.id %}" class="btn btn-outline-light me-3"><i class="fas fa-arrow-left"></i></a>
+              <div>
+                <h1 class="text-white mb-1">Registro Médico</h1>
+                <p class="text-white-50 mb-0">
+                  <i class="fas fa-paw me-1"></i> {{ record.pet.name }} •
+                  <i class="fas fa-calendar-alt me-1"></i> {{ record.visit_date|date:'d M Y H:i' }}
+                </p>
+              </div>
+            </div>
+          </div>
+          <div class="col-md-4 text-end mt-1 mt-md-0">
+            <div class="btn-group">
+              <button class="btn btn-outline-light" data-bs-toggle="modal" data-bs-target="#addMedicalRecord" class="btn btn-light"><i class="fas fa-edit"></i> Editar</button>
+              <a href="{% url 'print_medical_record' record.id %}" class="btn btn-outline-light" target="_blank"><i class="fas fa-print me-1"></i> Imprimir</a>
+              <button class="btn btn-outline-light" data-bs-toggle="modal" data-bs-target="#deleteRecordModal"><i class="fas fa-trash-alt"></i></button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container py-4">
+      <div class="row">
+        <!-- Medical Details -->
+        <div class="col-lg-8">
+          <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+              <h5 class="mb-0">
+                <i class="fas fa-file-medical text-primary me-2"></i>
+                Detalles de la Consulta
+              </h5>
+            </div>
+            <div class="card-body">
+              <div class="row mb-4">
+                <div class="col-md-6 mb-3">
+                  <h6 class="section-title"><i class="fas fa-info-circle me-2"></i>Motivo de la visita</h6>
+                  <div class="diagnosis-content p-3 bg-light rounded">{{ record.visit_motive|default:'-'|linebreaks }}</div>
+                </div>
+                <div class="col-md-6 mb-3">
+                  <h6 class="section-title"><i class="fas fa-stethoscope me-2"></i>Diagnóstico</h6>
+                  <div class="diagnosis-content p-3 bg-light rounded">{{ record.diagnosis|linebreaks }}</div>
+                </div>
+
+                <div class="col-md-6">
+                  <div class="prescription-box">
+                    <h6 class="section-title"><i class="fas fa-pills me-2"></i>Medicamentos</h6>
+                    {% if record.prescribed_meds %}
+                      <div class="treatment-content p-3 bg-light rounded">{{ record.prescribed_meds|linebreaks }}</div>
+                    {% else %}
+                      <div class="alert alert-light">No se prescribieron medicamentos</div>
+                    {% endif %}
+                  </div>
+                </div>
+                <div class="col-md-6">
+                  <h6 class="section-title"><i class="fas fa-heartbeat me-2"></i>Tratamiento</h6>
+                  <div class="treatment-content p-3 bg-light rounded">{{ record.treatment|linebreaks }}</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="col-md-12">
+                <div class="medical-meta p-3">
+                  <h6 class="section-title"><i class="fas fa-info-circle me-2"></i>Datos Clínicos</h6>
+                  <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex flex-column gap-2 justify-content-between">
+                      <span>Anamnesis:</span>
+                      <strong>{{ record.visit_reason }}</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                      <span>Peso:</span>
+                      <strong>{{ record.weight|default:'-' }} kg</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                      <span>Temperatura:</span>
+                      <strong>{{ record.temperature|default:'-' }} °C</strong>
+                    </li>
+                    
+                    <li class="list-group-item d-flex justify-content-between">
+                      <span>Temperamento:</span>
+                      <strong>{{ record.get_temperament_display|default:'-' }}</strong>
+                    </li>
+                    
+                    <li class="list-group-item d-flex justify-content-between">
+                      <span>Frecuencia cardiaca:</span>
+                      <strong>{{ record.heart_rate|default:'-' }} bpm</strong>
+                    </li>
+
+                    <li class="list-group-item d-flex justify-content-between">
+                      <span>Frecuencia respiratoria:</span>
+                      <strong>{{ record.respiratory_rate|default:'-' }} rpm</strong>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between">
+                      <span>Veterinario:</span>
+                      <strong>{{ record.veterinarian }}</strong>
+                    </li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sidebar -->
+        <sidebar class="col-lg-4 pet-record">
+          <!-- Pet Summary -->
+          <div class="card shadow-sm mb-4">
+            <div class="card-header bg-light">
+              <h5 class="mb-0">
+                <i class="fas fa-paw text-primary me-2"></i>
+                Mascota
+              </h5>
+            </div>
+            <div class="card-body">
+              <div class="d-flex align-items-center mb-3">
+                <div class="pet-avatar me-3">
+                  <div class="avatar-fallback-sm rounded-circle">
+                    <i class="fas fa-paw"></i>
+                  </div>
+                </div>
+                <div>
+                  <h5>{{ record.pet.name }}</h5>
+                  <p class="text-muted mb-1">{{ record.pet.get_species_display }} • {{ record.pet.breed }}</p>
+                </div>
+              </div>
+              <ul class="list-group list-group-flush">
+                {% if record.pet.age %}
+                  <li class="list-group-item d-flex justify-content-between">
+                    <span>Edad:</span>
+                    <strong>{{ record.pet.age }} Años</strong>
+                  </li>
+                {% endif %}
+                <li class="list-group-item d-flex justify-content-between">
+                  <span>Color:</span>
+                  <strong>{{ record.pet.color }}</strong>
+                </li>
+                <li class="list-group-item d-flex justify-content-between">
+                  <span>Registro:</span>
+                  <strong>{{ record.pet.registration_date|date:'d/m/Y' }}</strong>
+                </li>
+              </ul>
+            </div>
+          </div>
+
+          <!-- Attachments -->
+          <div class="card shadow-sm">
+            <div class="card-header bg-light">
+              <h5 class="mb-0">
+                <i class="fas fa-paperclip me-2"></i>
+                Archivos Adjuntos
+              </h5>
+            </div>
+            <div class="card-body">
+              <form method="post" enctype="multipart/form-data" action="{% url 'edit_medical_record' record.id %}">
+                {% csrf_token %}
+                <div class="d-flex gap-2 flex-wrap mb-4">
+                  {{ attachment_form.file }}
+                  {{ attachment_form.description }}
+                  <button type="submit" name="submit_attachment" class="btn btn-primary mt-2">Adjuntar Archivo</button>
+                </div>
+              </form>
+              {% for attachment in attachments %}
+                <div class="list-group mb-2 flex-row">
+                  <a href="{{ attachment.file.url }}" class="list-group-item list-group-item-action" target="_blank">
+                    <div class="d-flex align-items-center">
+                      {% with ext=attachment.file.name|lower|slice:'-4:' %}
+                        {% if ext == '.pdf' %}
+                          <i class="fas fa-file-pdf text-danger fa-2x me-3"></i>
+                        {% elif ext == '.jpg' or ext == 'jpeg' or ext == '.png' %}
+                          <i class="fas fa-file-image text-primary fa-2x me-3"></i>
+                        {% elif ext == '.doc' or ext == 'docx' %}
+                          <i class="fas fa-file-word text-info fa-2x me-3"></i>
+                        {% elif ext == '.xls' or ext == 'xlsx' %}
+                          <i class="fas fa-file-excel text-success fa-2x me-3"></i>
+                        {% elif ext == '.txt' %}
+                          <i class="fas fa-file-alt text-secondary fa-2x me-3"></i>
+                        {% else %}
+                          <i class="fas fa-file text-muted fa-2x me-3"></i>
+                        {% endif %}
+                      {% endwith %}
+
+                      <div>
+                        <h6 class="mb-0">{{ attachment.description|default:'Sin Descripción' }}</h6>
+                        <small class="text-muted">{{ attachment.file.name|slice:'-3:'|upper }} • {{ attachment.file.size|filesizeformat }}</small>
+                      </div>
+                    </div>
+                  </a>
+                  <a href="{% url 'delete_attachment' attachment.id %}" class="btn btn-sm btn-danger d-flex align-items-center"><i class="fas fa-trash-alt"></i></a>
+                </div>
+              {% endfor %}
+            </div>
+          </div>
+          <!-- Next Checkup -->
+          {% if record.next_checkup %}
+            <div class="card shadow-sm mb-4">
+              <div class="card-header bg-secondary-color">
+                <h5 class="mb-0 text-white">
+                  <i class="fas fa-calendar-check me-2"></i>
+                  Próximo Control
+                </h5>
+              </div>
+              <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center">
+                  <div>
+                    <h4 class="mb-1">{{ record.next_checkup|date:'l, d F Y' }}</h4>
+                    <p class="mb-0 text-muted">
+                      <i class="fas fa-clock me-1"></i> {{ record.next_checkup }}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          {% endif %}
+        </sidebar>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Modal -->
+  <div class="modal fade" id="deleteRecordModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-danger">
+          <h5 class="modal-title text-white"><i class="fas fa-exclamation-triangle me-2"></i> Confirmar Eliminación</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p>¿Estás seguro que deseas eliminar este registro médico del {{ record.visit_date|date:'d/m/Y' }}?</p>
+          <div class="alert alert-warning">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            Esta acción no puede deshacerse y se perderán todos los datos asociados.
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <form method="POST" action="{% url 'delete_medical_record' record.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Eliminar Permanentemente</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% url 'edit_medical_record' record.id as edit_medical_record_url %}
+  {% include 'partials/_medical-record.html' with form_url=edit_medical_record_url %}
+{% endblock %}

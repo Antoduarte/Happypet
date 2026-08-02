@@ -1,0 +1,163 @@
+{% extends 'base.html' %}
+{% block page_content %}
+  <div class="owner-profile">
+    <div class="bg-secondary-color mb-3">
+      <div class="container py-3">
+        <div class="d-flex align-items-center justify-content-between">
+          <div class="d-flex align-items-center gap-3">
+            <a href="{% url 'pet_list' %}" class="btn btn-outline-light"><i class="fas fa-arrow-left"></i></a>
+            <div class="profile-avatar shadow">
+              <div class="avatar-initials rounded-circle text-dark">{{ owner.first_name|first|upper }}{{ owner.last_name|first|upper }}</div>
+            </div>
+            <div class="text-white">
+              <h1 class="text-white mb-1">{{ owner.first_name }} {{ owner.last_name }}</h1>
+              <div class="d-flex flex-wrap">
+                <a href="tel:{{ owner.phone }}" class="btn btn-sm btn-light me-2 mb-2"><i class="fas fa-phone me-1"></i> {{ owner.phone }}</a>
+              </div>
+            </div>
+          </div>
+          <div class="btn-group">
+            <button class="btn btn-outline-light" data-bs-toggle="modal" data-bs-target="#addOwner" class="btn btn-light"><i class="fas fa-edit"></i> Editar</button>
+            <button class="btn btn-outline-light" data-bs-toggle="modal" data-bs-target="#deleteModal"><i class="fas fa-trash-alt"></i></button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Main content -->
+    <div class="container py-4">
+      <div class="row">
+        <!-- Owner details -->
+        <div class="col-lg-4">
+          <div class="card shadow-sm mb-4">
+            <div class="card-body">
+              <h5 class="h4 with-icon text-primary"><i class="fas fa-info-circle"></i> Información</h5>
+              <div class="owner-meta">
+                <div class="meta-item">
+                  <i class="fas fa-map-marker-alt"></i>
+                  <div>
+                    <h6>Dirección</h6>
+                    <p>{{ owner.address|default:'No especificada' }}</p>
+                  </div>
+                </div>
+
+                <div class="meta-item">
+                  <i class="fa-solid fa-fingerprint"></i>
+                  <div>
+                    <h6>Indentifiacador</h6>
+                    <p>{{ owner.id_number }}</p>
+                  </div>
+                </div>
+
+                <div class="meta-item">
+                  <i class="fas fa-calendar-alt"></i>
+                  <div>
+                    <h6>Registro</h6>
+                    <p>{{ owner.registration_date|date:'d M Y' }}</p>
+                  </div>
+                </div>
+
+                <div class="meta-item">
+                  <i class="fas fa-paw"></i>
+                  <div>
+                    <h6>Mascotas</h6>
+                    <p>{{ owner.pets.count }} registradas</p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Emergency contact -->
+          <div class="card shadow-sm mb-4">
+            <div class="card-body">
+              <h5 class="card-title with-icon"><i class="fas fa-exclamation-triangle text-warning"></i> Contacto de emergencia</h5>
+              <div class="emergency-contact">
+                {% if owner.emergency_contact %}
+                  <p>
+                    <i class="fas fa-phone me-2"></i> {{ owner.emergency_contact }}
+                  </p>
+                {% else %}
+                  <p class="text-muted">No especificado</p>
+                {% endif %}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Pets section -->
+        <div class="col-lg-8">
+          <div class="card shadow-sm">
+            <div class="card-header d-flex justify-content-between align-items-center">
+              <h5 class="mb-0">
+                <i class="fas fa-paw text-primary me-2"></i>
+                Mascotas ({{ owner.pets.count }})
+              </h5>
+            </div>
+            <div class="card-body">
+              {% if owner.pets.all %}
+                <div class="pet-grid">
+                  {% for pet in owner.pets.all %}
+                    <a href="{% url 'pet_detail' pet.id %}">
+                      <div class="pet-card">
+                        <div class="pet-avatar">
+                          <div class="avatar-fallback">
+                            <i class="fas fa-paw"></i>
+                          </div>
+                        </div>
+                        <div class="pet-info">
+                          <h6>{{ pet.name }}</h6>
+                          <p class="pet-meta">
+                            <span>{{ pet.get_species_display }}</span>
+                          </p>
+                        </div>
+                      </div>
+                    </a>
+                  {% endfor %}
+                </div>
+              {% else %}
+                <div class="empty-state">
+                  <i class="fas fa-paw fa-3x text-muted mb-3"></i>
+                  <h5>No hay mascotas registradas</h5>
+                  <p class="text-muted">Este dueño no tiene mascotas asociadas aún</p>
+                </div>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Modal -->
+  <div class="modal fade" id="deleteModal" tabindex="-1">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title text-white"><i class="fas fa-exclamation-triangle me-2"></i> Confirmar eliminación</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+        </div>
+        <div class="modal-body">
+          <p>
+            ¿Estás seguro que deseas eliminar permanentemente a <strong>{{ owner.first_name }} {{ owner.last_name }}</strong>?
+          </p>
+          {% if owner.pets.count > 0 %}
+            <div class="alert alert-warning">
+              <i class="fas fa-exclamation-circle me-2"></i>
+              Esta acción también eliminará las {{ owner.pets.count }} mascotas asociadas.
+            </div>
+          {% endif %}
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+          <form method="POST" action="{% url 'delete_owner' owner.id %}">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">Eliminar permanentemente</button>
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+  {% url 'edit_owner' owner.id as edit_owner_url %}
+  {% include 'partials/_owner-modal.html' with form_url=edit_owner_url %}
+{% endblock %}
