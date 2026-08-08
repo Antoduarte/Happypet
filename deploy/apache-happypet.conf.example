@@ -1,0 +1,45 @@
+# ============================================================================
+# VirtualHost de Happypet — Apache 2.4 como reverse proxy hacia waitress.
+#
+# Copiar a C:\Apache24\conf\extra\ y referenciarlo desde httpd.conf con:
+#     Include conf/extra/apache-happypet.conf
+#
+# Requisitos en httpd.conf (descomentar):
+#     LoadModule proxy_module      modules/mod_proxy.so
+#     LoadModule proxy_http_module modules/mod_proxy_http.so
+#
+# Y comentar mod_wsgi, que ya no se usa:
+#     #LoadModule wsgi_module ...
+#
+# Ajustar ServerName y las rutas si el proyecto no esta en C:/Apache24/htdocs/Happypet.
+# ============================================================================
+
+<VirtualHost *:80>
+    ServerName happypet.local
+
+    # Estaticos y media los sirve Apache directamente (STATIC_ROOT / MEDIA_ROOT
+    # en ims/settings.py). Ejecutar collectstatic si staticfiles/ esta vacio.
+    Alias /static/ "C:/Apache24/htdocs/Happypet/staticfiles/"
+    Alias /media/  "C:/Apache24/htdocs/Happypet/media/"
+
+    <Directory "C:/Apache24/htdocs/Happypet/staticfiles">
+        Require all granted
+    </Directory>
+    <Directory "C:/Apache24/htdocs/Happypet/media">
+        Require all granted
+    </Directory>
+
+    # Conserva el header Host para que ALLOWED_HOSTS siga validando happypet.local
+    ProxyPreserveHost On
+
+    # IMPORTANTE: las exclusiones van ANTES del ProxyPass general,
+    # si no Apache mandaria los estaticos a Django.
+    ProxyPass        /static/ !
+    ProxyPass        /media/  !
+
+    ProxyPass        /        http://127.0.0.1:8001/
+    ProxyPassReverse /        http://127.0.0.1:8001/
+
+    ErrorLog  "logs/happypet-error.log"
+    CustomLog "logs/happypet-access.log" common
+</VirtualHost>

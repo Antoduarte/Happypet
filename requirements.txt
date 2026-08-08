@@ -15,7 +15,6 @@
 Django==4.2.20
 django-environ==0.11.2
 # fonttools==4.57.0
-gunicorn==23.0.0
 # html5lib==1.1
 # idna==3.10
 # lxml==5.4.0
@@ -44,6 +43,7 @@ psycopg2-binary==2.9.10
 # tzlocal==5.2
 # uritools==4.0.3
 # urllib3==2.2.3
+waitress==3.0.2
 # webencodings==0.5.1
 xhtml2pdf==0.2.17
 # zopfli==0.2.3.post1
