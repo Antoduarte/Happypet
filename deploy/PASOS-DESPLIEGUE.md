@@ -80,13 +80,18 @@ venv\Scripts\python manage.py collectstatic --noinput
 
 ```bat
 cd C:\Apache24\htdocs\Happypet
-venv\Scripts\waitress-serve.exe --listen=127.0.0.1:8001 --threads=8 ims.wsgi:application
+venv\Scripts\python.exe -m waitress --listen=127.0.0.1:8001 --threads=8 ims.wsgi:application
 ```
 
 ```bat
 cd C:\Apache24\htdocs\happypet-inventory
-venv\Scripts\waitress-serve.exe --listen=127.0.0.1:8002 --threads=8 config.wsgi:application
+venv\Scripts\python.exe -m waitress --listen=127.0.0.1:8002 --threads=8 config.wsgi:application
 ```
+
+> Se usa `python.exe -m waitress` y **no** `waitress-serve.exe` a propósito: los `.exe` que
+> genera pip/uv llevan grabada la ruta absoluta del intérprete del momento de la instalación,
+> así que renombrar o mover el venv los rompe. `python.exe` resuelve su venv por `pyvenv.cfg`,
+> que es relativo a su propia ubicación.
 
 Con cada uno corriendo, abrir en el navegador del servidor `http://127.0.0.1:8001/` y
 `http://127.0.0.1:8002/`. Cortar con `Ctrl+C`.
@@ -175,6 +180,83 @@ cada sitio una vez**.
 
 ---
 
+## Prueba de reinicio (no la saltees antes de entregar)
+
+Los tres servicios quedan en arranque automático: Apache2.4 ya lo estaba, y los dos nuevos
+los configura `install_service.bat` con `Start SERVICE_AUTO_START`. Levantan solos al
+encender la máquina, sin que nadie inicie sesión.
+
+Es la única forma de saber que realmente funciona:
+
+- [ ] **Reiniciar el servidor.**
+- [ ] Sin tocar nada, verificar que los tres estén arriba:
+
+      Get-Service Apache2.4, Happypet, HappypetInventory | Format-Table Name, Status, StartType
+
+      Los tres deben decir `Running` / `Automatic`.
+- [ ] Abrir `http://happypet.local/` y `http://inventory.local/` en el navegador.
+
+### Si cambiaste la cuenta de los servicios, leé esto
+
+Mientras los servicios corran como **LocalSystem** (el default) no hay nada que hacer.
+Pero si tuviste que cambiarlos a una cuenta de usuario por los permisos de `wkhtmltopdf`
+(`nssm set Happypet ObjectName .\USUARIO CONTRASENA`):
+
+- [ ] Esa cuenta necesita el derecho **"Iniciar sesión como servicio"**. Sin él, el servicio
+      arranca bien la primera vez pero **falla al reiniciar la máquina** con
+      **error 1069** (*"el servicio no se inició debido a un error de inicio de sesión"*).
+      NSSM normalmente lo concede al asignar la cuenta, pero verificalo en:
+      `secpol.msc` → *Directivas locales* → *Asignación de derechos de usuario* →
+      *Iniciar sesión como servicio*.
+- [ ] La cuenta debe tener **contraseña sin vencimiento**. El día que expire, los sitios
+      dejan de levantar.
+
+### Dos cosas que se resuelven solas
+
+- **PostgreSQL puede tardar más en levantar que Django.** No importa: Django no conecta a
+  la base al arrancar, sino en la primera consulta.
+- **Si Apache levanta antes que waitress**, las primerísimas peticiones pueden dar **503**.
+  Se corrige solo en cuanto waitress termina de arrancar. Se podría forzar el orden con
+  dependencias de servicio, pero no vale la pena: `sc config` **reemplaza** la lista de
+  dependencias existentes de Apache, y es más riesgo que beneficio para un 503 de unos segundos.
+
+---
+
+## Apéndice — para qué es NSSM
+
+**NSSM** (*Non-Sucking Service Manager*) convierte un `.exe` cualquiera en un servicio de Windows.
+
+Windows no puede arrancar cualquier programa como servicio: un servicio debe hablar el
+protocolo del **Service Control Manager** — registrarse al iniciar, responder a stop/pause,
+reportar estado. `waitress-serve.exe` no hace nada de eso, es una aplicación de consola común.
+Con `sc create` directo, Windows lo lanzaría, esperaría el "acá estoy" que nunca llega, y
+abortaría con **error 1053** (*"el servicio no respondió a tiempo"*).
+
+NSSM se mete en el medio:
+
+```
+Windows SCM  ──arranca──►  nssm.exe  ──lanza como hijo──►  waitress-serve.exe
+             ◄──responde──            ──vigila y reinicia──►
+```
+
+Lo que aporta, según lo que configura `install_service.bat`:
+
+| Configuración | Para qué |
+|---|---|
+| `Start SERVICE_AUTO_START` | Arranca solo al encender la máquina |
+| `AppExit Default Restart` + `AppRestartDelay 5000` | Si el proceso se cae, lo relevanta a los 5 s |
+| `AppStdout` / `AppStderr` | Manda la salida a `logs\waitress.log` — si no, se perdería |
+
+Antes no hacía falta porque el servicio era Apache y el código Python vivía dentro de
+`httpd.exe`. Ahora que Django corre en procesos propios, esos procesos necesitan quién los
+arranque al boot y los mantenga vivos.
+
+**Alternativa** si NSSM diera problemas: **WinSW** (mismo concepto, un `.exe` configurado por
+XML). El Programador de Tareas también arranca cosas al boot, pero no reinicia ante caída ni
+permite `net stop`, así que no se recomienda.
+
+---
+
 ## Los dos puntos donde esperar fricción
 
 ### La impresión de tickets
@@ -213,6 +295,24 @@ Verificar temprano que conecte bien. Si da error de autenticación de Postgres, 
 | 503 Service Unavailable | El servicio de waitress no está corriendo → `services.msc` |
 | 400 Bad Request | `ALLOWED_HOSTS`, o falta `ProxyPreserveHost On` en el vhost |
 | Se abre el sitio equivocado | Falta `ServerName` en algún vhost → `httpd -S` |
+| **`Index of /`** en vez de la app | Apache no está leyendo el vhost. Verificar que `Include conf/extra/...` **no** esté comentado en `httpd.conf`, y confirmar con `httpd -S` |
+| **`Failed to canonicalize script path`** en `waitress-error.log`, servicio en `Paused` | El venv fue renombrado o movido **después** de instalar los paquetes. Ver abajo |
+
+### `Failed to canonicalize script path`
+
+Los `.exe` de `venv\Scripts\` (incluido `pip.exe`) llevan grabada la ruta absoluta del
+intérprete del momento de la instalación. Si el venv se renombra o se mueve, todos apuntan a
+un path inexistente. `Paused` es como reporta NSSM un servicio cuya app se cae una y otra vez.
+
+Para ver la ruta que quedó grabada:
+
+```powershell
+[Text.Encoding]::ASCII.GetString([IO.File]::ReadAllBytes("venv\Scripts\waitress-serve.exe")) `
+  -match '#![^\r\n]+' | Out-Null; $Matches[0]
+```
+
+Solución: recrear el venv en su ubicación final, o invocar siempre `python.exe -m <módulo>`
+(que es lo que hacen estos scripts).
 
 ---
 

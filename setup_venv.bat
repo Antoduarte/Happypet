@@ -24,7 +24,7 @@ venv\Scripts\pip install -r requirements.txt
 
 echo.
 echo Listo. Prueba el arranque a mano antes de crear el servicio:
-echo    venv\Scripts\waitress-serve.exe --listen=127.0.0.1:8001 --threads=8 ims.wsgi:application
+echo    venv\Scripts\python.exe -m waitress --listen=127.0.0.1:8001 --threads=8 ims.wsgi:application
 echo.
 echo Para registrar el servicio de Windows:  deploy\install_service.bat
 echo Para reiniciarlo:  net stop Happypet ^&^& net start Happypet

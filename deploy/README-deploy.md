@@ -60,7 +60,7 @@ venv\Scripts\python manage.py collectstatic --noinput
 Probar el arranque a mano antes de crear el servicio:
 
 ```bat
-venv\Scripts\waitress-serve.exe --listen=127.0.0.1:8001 --threads=8 ims.wsgi:application
+venv\Scripts\python.exe -m waitress --listen=127.0.0.1:8001 --threads=8 ims.wsgi:application
 ```
 
 ### 2. Registrar el servicio de Windows
