@@ -7,7 +7,7 @@ from django.contrib import messages
 from django.urls import reverse_lazy
 from .forms import OwnerForm, PetForm, MedicalRecordForm, AttachmentForm
 from .models import Owner, Pet, MedicalRecord, MedicalAttachment
-from django.http import HttpResponse
+from django.http import HttpResponse, HttpResponseNotAllowed
 from django.template.loader import render_to_string
 from django.db.models import Q
 from django.shortcuts import redirect, get_object_or_404
@@ -16,23 +16,18 @@ import pdfkit
 
 
 
-""" Create Views"""
-class CreateOwnerView(LoginRequiredMixin, CreateView):
-    model = Owner
-    form_class = OwnerForm
-    template_name = 'pets_owners.html'
-    success_url = reverse_lazy('pet_list')
-    
+class OwnerFormInvalidMixin:
+    """Mixin para manejar errores de validación duplicados en vistas de dueño."""
+
     def form_invalid(self, form):
-        """Maneja los errores de validación del formulario"""
         field_name = {
             'phone': 'Numero de Telefono',
             'id_number': 'Identificador'
         }
-        
+
         for field, errors in form.errors.items():
             if 'already exists' in str(errors):
-                field_label = field_name[field]
+                field_label = field_name.get(field, field)
                 messages.error(
                     self.request,
                     f'Error: {field_label} ya existe en el sistema. Por favor use otro.'
@@ -43,8 +38,20 @@ class CreateOwnerView(LoginRequiredMixin, CreateView):
                 self.request,
                 'Por favor corrija los errores en el formulario.'
             )
-        
-        return redirect('pet_list')
+
+        return redirect(self.get_success_url())
+
+
+""" Create Views """
+class CreateOwnerView(LoginRequiredMixin, OwnerFormInvalidMixin, CreateView):
+    model = Owner
+    form_class = OwnerForm
+    template_name = 'pets_owners.html'
+    success_url = reverse_lazy('pet_list')
+
+    def get_success_url(self):
+        """Return the success URL directly to avoid formatting a None object."""
+        return self.success_url
 
     def form_valid(self, form):
         messages.success(
@@ -77,7 +84,7 @@ class CreateMedicalRecordView(LoginRequiredMixin, CreateView):
     template_name = 'pet_owner_detail.html'
 
     def form_valid(self, form):
-        form.instance.pet = Pet.objects.get(pk=self.kwargs['pk'])
+        form.instance.pet = get_object_or_404(Pet, pk=self.kwargs['pk'])
         return super().form_valid(form)
     
     def get_success_url(self):
@@ -103,7 +110,7 @@ class OwnerListView(LoginRequiredMixin, ListView):
     def get_queryset(self):
         queryset = super().get_queryset().prefetch_related('pets')
         search_query = self.request.GET.get('q')
-        
+
         if search_query:
             queryset = queryset.filter(
                 Q(first_name__icontains=search_query) |
@@ -111,7 +118,7 @@ class OwnerListView(LoginRequiredMixin, ListView):
                 Q(id_number__icontains=search_query) |
                 Q(phone__icontains=search_query) |
                 Q(pets__name__icontains=search_query)
-            )
+            ).distinct()
         return queryset
     
 """ Detail Views"""
@@ -134,6 +141,9 @@ class OwnerDetailView(LoginRequiredMixin, DetailView):
     template_name = 'owner_detail.html'
     context_object_name = 'owner'
 
+    def get_queryset(self):
+        return super().get_queryset().prefetch_related('pets')
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context['owner_form'] = OwnerForm(instance=self.object)
@@ -143,6 +153,9 @@ class MedicalRecordDetailView(LoginRequiredMixin, DetailView):
     model = MedicalRecord
     template_name = 'pet_medical_record_detail.html'
     context_object_name = 'record'
+
+    def get_queryset(self):
+        return super().get_queryset().select_related('pet__owner').prefetch_related('medical_attachments')
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -154,37 +167,14 @@ class MedicalRecordDetailView(LoginRequiredMixin, DetailView):
 
 
 """ Edit Views"""
-class EditOwnerView(LoginRequiredMixin, UpdateView):
+class EditOwnerView(LoginRequiredMixin, OwnerFormInvalidMixin, UpdateView):
     model = Owner
     form_class = OwnerForm
     template_name = 'pet_owner_detail.html'
 
     def get_success_url(self):
         return reverse_lazy('owner_detail', kwargs={'pk': self.kwargs['pk']})
-    
-    def form_invalid(self, form):
-        """Maneja los errores de validación del formulario"""
-        field_name = {
-            'phone': 'Numero de Telefono',
-            'id_number': 'Identificador'
-        }
-        
-        for field, errors in form.errors.items():
-            if 'already exists' in str(errors):
-                field_label = field_name[field]
-                messages.error(
-                    self.request,
-                    f'Error: {field_label} ya existe en el sistema. Por favor use otro.'
-                )
-                break
-        else:
-            messages.error(
-                self.request,
-                'Por favor corrija los errores en el formulario.'
-            )
-        
-        return redirect(self.get_success_url())
-    
+
     def form_valid(self, form):
         messages.success(
             self.request,
@@ -196,7 +186,7 @@ class EditOwnerView(LoginRequiredMixin, UpdateView):
 class EditPetView(LoginRequiredMixin, UpdateView):
     model = Pet
     form_class = PetForm
-    template_name = 'pet_detail.html'
+    template_name = 'pet_owner_detail.html'
 
     def get_success_url(self):
         return reverse_lazy('pet_detail', kwargs={'pk': self.kwargs['pk']})
@@ -250,23 +240,26 @@ class MedicalRecordDeleteView(LoginRequiredMixin, DeleteView):
 
 @login_required()
 def delete_attachment(request, pk):
+    if request.method != 'POST':
+        return HttpResponseNotAllowed(['POST'])
+
     attachment = get_object_or_404(MedicalAttachment, pk=pk)
     record_pk = attachment.record.pk
-    
+
     file = attachment.file
     if file:
         try:
-            file.delete(save=False) 
-        except:
+            file.delete(save=False)
+        except Exception:
             pass
-        
+
     attachment.delete()
     return redirect('medical_record_detail', pk=record_pk)
 
 
 @login_required()
 def print_medical_record(request, pk):
-    record = MedicalRecord.objects.get(pk=pk)
+    record = get_object_or_404(MedicalRecord, pk=pk)
     html = render_to_string('medical_records/ticket.html', {'record': record})
     config = pdfkit.configuration(wkhtmltopdf=r'C:\Program Files\wkhtmltopdf\bin\wkhtmltopdf.exe')
     options = {

@@ -8,4 +8,4 @@ class CustomLoginView(LoginView):
     redirect_authenticated_user = True  
 
 class CustomLogoutView(LogoutView):
-    next_page = reverse_lazy('welcome')  # Redirige a la página de bienvenida
+    next_page = reverse_lazy('welcome') 

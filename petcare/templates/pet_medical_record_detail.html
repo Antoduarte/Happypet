@@ -63,7 +63,13 @@
                 </div>
                 <div class="col-md-6">
                   <h6 class="section-title"><i class="fas fa-heartbeat me-2"></i>Tratamiento</h6>
-                  <div class="treatment-content p-3 bg-light rounded">{{ record.treatment|linebreaks }}</div>
+                  <div class="treatment-content p-3 bg-light rounded">
+                    {% for line in record.treatment_lines %}
+                      <div class="mb-1"><strong>-</strong> {{ line }}</div>
+                    {% empty %}
+                      <div>-</div>
+                    {% endfor %}
+                  </div>
                 </div>
               </div>
             </div>
@@ -195,7 +201,10 @@
                       </div>
                     </div>
                   </a>
-                  <a href="{% url 'delete_attachment' attachment.id %}" class="btn btn-sm btn-danger d-flex align-items-center"><i class="fas fa-trash-alt"></i></a>
+                  <form method="post" action="{% url 'delete_attachment' attachment.id %}" class="d-flex align-items-center">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-sm btn-danger"><i class="fas fa-trash-alt"></i></button>
+                  </form>
                 </div>
               {% endfor %}
             </div>

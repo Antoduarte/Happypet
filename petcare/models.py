@@ -74,7 +74,11 @@ class MedicalRecord(models.Model):
         verbose_name_plural = "Historiales Médicos"
     
     def __str__(self):
-        return f"Historial de {self.mascota} - {self.fecha_visita.date()}"
+        return f"Historial de {self.pet} - {self.visit_date.date()}"
+
+    def treatment_lines(self):
+        """Devuelve las líneas no vacías del campo treatment."""
+        return [line.strip() for line in self.treatment.splitlines() if line.strip()]
 
 class MedicalAttachment(models.Model):
     record = models.ForeignKey(MedicalRecord, on_delete=models.CASCADE, related_name='medical_attachments')

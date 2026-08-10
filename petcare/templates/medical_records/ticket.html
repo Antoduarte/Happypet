@@ -61,6 +61,14 @@
         white-space: normal;
         word-break: break-word;
       }
+      .treatment-item {
+        margin-bottom: 6px;
+        padding-bottom: 4px;
+        border-bottom: 1px dotted #000;
+      }
+      .treatment-item:last-child {
+        border-bottom: none;
+      }
     </style>
   </head>
   <body>
@@ -94,7 +102,13 @@
 
     <div class="record-details no-break">
       <div class="section-title">TRATAMIENTO:</div>
-      <div class="text-wrap">{{ record.treatment }}</div>
+      {% for line in record.treatment_lines %}
+        <div class="treatment-item text-wrap">
+          <strong>{{ forloop.counter }}.</strong> {{ line }}
+        </div>
+      {% empty %}
+        <div class="text-wrap">-</div>
+      {% endfor %}
     </div>
 
     <div class="footer no-break">
