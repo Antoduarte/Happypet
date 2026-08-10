@@ -23,7 +23,14 @@ if errorlevel 1 (
     exit /b 1
 )
 
-if not exist "%PROJECT%\venv\Scripts\waitress-serve.exe" (
+if not exist "%PROJECT%\venv\Scripts\python.exe" (
+    echo ERROR: no existe el venv. Ejecuta primero setup_venv.bat
+    pause
+    exit /b 1
+)
+
+"%PROJECT%\venv\Scripts\python.exe" -c "import waitress" 2>nul
+if errorlevel 1 (
     echo ERROR: falta waitress en el venv. Ejecuta primero setup_venv.bat
     pause
     exit /b 1
@@ -31,8 +38,13 @@ if not exist "%PROJECT%\venv\Scripts\waitress-serve.exe" (
 
 echo Registrando servicio %SERVICE% en 127.0.0.1:%PORT% ...
 
-nssm install %SERVICE% "%PROJECT%\venv\Scripts\waitress-serve.exe"
-nssm set %SERVICE% AppParameters "--listen=127.0.0.1:%PORT% --threads=8 ims.wsgi:application"
+REM Se invoca python.exe -m waitress y NO waitress-serve.exe a proposito:
+REM los .exe que genera pip/uv llevan grabada la ruta absoluta del interprete
+REM del momento de la instalacion, asi que renombrar o mover el venv los rompe
+REM ("Failed to canonicalize script path"). python.exe resuelve su venv por
+REM pyvenv.cfg, que es relativo a su propia ubicacion.
+nssm install %SERVICE% "%PROJECT%\venv\Scripts\python.exe"
+nssm set %SERVICE% AppParameters "-m waitress --listen=127.0.0.1:%PORT% --threads=8 ims.wsgi:application"
 nssm set %SERVICE% AppDirectory "%PROJECT%"
 nssm set %SERVICE% DisplayName "Happypet (Django/waitress)"
 nssm set %SERVICE% Description "Happypet servido por waitress en 127.0.0.1:%PORT%, detras de Apache"
