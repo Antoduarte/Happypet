@@ -51,8 +51,8 @@ class MedicalRecord(models.Model):
     
     pet = models.ForeignKey(Pet, on_delete=models.CASCADE, related_name='medical_records', null=True, blank=True)
     visit_date = models.DateTimeField()
-    visit_reason = models.CharField(max_length=200)
-    visit_motive = models.CharField(max_length=300, null=True, blank=True, help_text="Motivo de la visita")
+    visit_reason = models.TextField()
+    visit_motive = models.TextField(null=True, blank=True, help_text="Motivo de la visita")
     diagnosis = models.TextField()
     treatment = models.TextField()
     weight = models.DecimalField(max_digits=5, decimal_places=2, null=True, blank=True)

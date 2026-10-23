@@ -52,8 +52,8 @@ class MedicalRecordForm(forms.ModelForm):
         widgets = {
             'visit_date': forms.DateTimeInput(attrs={'type': 'datetime-local', 'class': 'form-control'}),
             'next_checkup': forms.DateInput(attrs={'type': 'date', 'class': 'form-control'}),
-            'visit_reason': forms.Textarea(attrs={'class': 'form-control', 'rows': 2 }),
-            'visit_motive': forms.Textarea(attrs={'class': 'form-control', 'rows': 2 }),
+            'visit_reason': forms.Textarea(attrs={'class': 'form-control', 'rows': 6}),
+            'visit_motive': forms.Textarea(attrs={'class': 'form-control', 'rows': 6}),
             'temperament': forms.Select(attrs={'class': 'form-control'}),
             'diagnosis': forms.Textarea(attrs={'class': 'form-control', 'rows': 4 }),
             'treatment': forms.Textarea(attrs={'class': 'form-control', 'rows': 5 }),

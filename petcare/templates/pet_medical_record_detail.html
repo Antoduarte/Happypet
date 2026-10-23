@@ -81,7 +81,7 @@
                   <ul class="list-group list-group-flush">
                     <li class="list-group-item d-flex flex-column gap-2 justify-content-between">
                       <span>Anamnesis:</span>
-                      <strong>{{ record.visit_reason }}</strong>
+                      <div>{{ record.visit_reason|linebreaks }}</div>
                     </li>
                     <li class="list-group-item d-flex justify-content-between">
                       <span>Peso:</span>
